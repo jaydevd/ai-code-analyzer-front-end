@@ -1,7 +1,7 @@
 import { ChevronRight, History, Loader2, MessageSquare, Plus, StopCircle } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import toast from "react-hot-toast";
+import { useDispatch, useSelector } from "react-redux";
 
 import { fetchRepos } from "@/app/slices/repositorySlice";
 import Button from "@/components/ui/Button";
@@ -15,7 +15,7 @@ import useGetChatHistory from "../hooks/useGetChatHistory";
 import useGetChatMessages from "../hooks/useGetChatMessages";
 import useSendChatMessage from "../hooks/useSendChatMessage";
 import useUpdateChatSession from "../hooks/useUpdateChatSession";
-import type { Message } from "../types/dashboard.types";
+import type { Message, Repository } from "../types/dashboard.types";
 
 const Chat = () => {
   const dispatch = useDispatch();
@@ -141,7 +141,7 @@ const Chat = () => {
 
     setMessages((prev) => [...prev, userMsg]);
 
-    const selectedRepoName = repos.find((r) => r.name === selectedRepo)?.name;
+    const selectedRepoName = repos.find((r:Repository) => r.name === selectedRepo)?.name;
 
     await sendMessage(prompt, {
       repoName: selectedRepoName || undefined,

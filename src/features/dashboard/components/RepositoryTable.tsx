@@ -48,7 +48,7 @@ const RepositoryTable = () => {
     if (!hasFetched && repos.length === 0) {
       dispatch(fetchRepos() as any);
     }
-  }, [dispatch, hasFetched, repos.length]);
+  }, [dispatch, hasFetched, repos?.length]);
 
   if (loading && repos.length === 0) {
     return (
@@ -74,7 +74,7 @@ const RepositoryTable = () => {
     );
   }
 
-  const displayedRepos = repos.slice(0, 5);
+  const displayedRepos = repos?.slice(0, 5);
 
   return (
     <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6">
@@ -127,7 +127,7 @@ const RepositoryTable = () => {
         </tbody>
       </table>
 
-      {repos.length === 0 && !loading && (
+      {repos && repos.length === 0 && !loading && (
         <p className="text-center text-slate-500 py-8 text-sm">
           No repositories found
         </p>
