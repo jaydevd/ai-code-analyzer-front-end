@@ -19,6 +19,7 @@ export interface Activity {
 
 export interface Branch {
   name: string;
+  commit_sha: string;
 }
 
 export interface ChatHistoryItem {
@@ -38,4 +39,23 @@ export interface Message {
   role: "user" | "assistant";
   timestamp: string;
   chat_id?: string;
+}
+
+export interface PreviousScan {
+  commit_url: string;
+  commit_sha: string;
+  indexed_at: number;
+}
+
+export interface BranchScanReport {
+  branch: string;
+  status: "not_scanned" | "scanning" | "scanned" | "failed";
+  last_indexed_at: number | null;
+  previous_scans: PreviousScan[];
+}
+
+export interface ScanReportResponse {
+  status: number;
+  data: BranchScanReport[];
+  message: string;
 }

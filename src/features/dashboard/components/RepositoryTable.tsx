@@ -21,6 +21,11 @@ interface RootState {
     error: string | null;
     hasFetched: boolean;
   };
+  auth: {
+    user: {
+      is_github_installation_active?: boolean;
+    } | null;
+  };
 }
 
 const statusDisplay = {
@@ -43,6 +48,9 @@ const RepositoryTable = () => {
   const { repos, loading, error, hasFetched } = useSelector(
     (state: RootState) => state.repos
   );
+  const githubConnected = useSelector(
+    (state: RootState) => state.auth.user?.is_github_installation_active
+  );
 
   useEffect(() => {
     if (!hasFetched && repos.length === 0) {
@@ -63,13 +71,26 @@ const RepositoryTable = () => {
     );
   }
 
+  if (!githubConnected && hasFetched) {
+    return (
+      <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6">
+        <h3 className="text-xl font-semibold text-white mb-6">
+          Recent Repositories
+        </h3>
+        <p className="text-center text-zinc-500 py-8 text-sm">
+          No data found. Connect GitHub to view repositories.
+        </p>
+      </div>
+    );
+  }
+
   if (error && repos.length === 0) {
     return (
       <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6">
         <h3 className="text-xl font-semibold text-white mb-6">
           Recent Repositories
         </h3>
-        <p className="text-center text-red-400 py-8">{error}</p>
+        <p className="text-center text-zinc-500 py-8 text-sm">No data found</p>
       </div>
     );
   }

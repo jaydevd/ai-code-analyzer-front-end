@@ -6,6 +6,7 @@ import { Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
 // Public Pages
 import EmailLogInPage from "@/auth/pages/EmailLogInPage";
 import LogInPage from "@/auth/pages/LogInPage";
+import SignUpPage from "@/auth/pages/SignUpPage";
 import LandingPage from "@/features/landing-page/Page";
 
 // Dashboard
@@ -13,6 +14,20 @@ import DashboardPage from "@/features/dashboard/Page";
 
 // Profile
 import ProfilePage from "@/features/user/Page";
+
+// Admin
+import AdminRoute from "@/features/admin/AdminRoute";
+import AdminPage from "@/features/admin/Page";
+import AdminDashboard from "@/features/admin/pages/Dashboard";
+import Scans from "@/features/admin/pages/Scans";
+import ScanDetail from "@/features/admin/pages/ScanDetail";
+import Users from "@/features/admin/pages/Users";
+import UserDetail from "@/features/admin/pages/UserDetail";
+import AdminRepos from "@/features/admin/pages/Repositories";
+import Logs from "@/features/admin/pages/Logs";
+
+// Repository Detail
+import RepoDetail from "@/features/dashboard/pages/RepoDetail";
 
 // Not Found
 import NotFoundPage from "@/shared/pages/NotFoundPage";
@@ -84,6 +99,7 @@ const AppRoutes = () => {
       <Route element={<PublicAuthRoute />}>
         <Route path="/login" element={<LogInPage />} />
         <Route path="/login/email" element={<EmailLogInPage />} />
+        <Route path="/signup" element={<SignUpPage />} />
       </Route>
 
       {/* Protected Routes */}
@@ -99,8 +115,8 @@ const AppRoutes = () => {
 
         {/* Repository Details */}
         <Route
-          path="/repositories/:repoId"
-          element={<div>Repository Detail</div>}
+          path="/repositories/:repoName"
+          element={<RepoDetail />}
         />
 
         {/* Branch */}
@@ -120,6 +136,24 @@ const AppRoutes = () => {
           path="/user/profile"
           element={<ProfilePage />}
         />
+
+        {/* Admin Routes */}
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <AdminPage />
+            </AdminRoute>
+          }
+        >
+          <Route index element={<AdminDashboard />} />
+          <Route path="scans" element={<Scans />} />
+          <Route path="scans/:scanId" element={<ScanDetail />} />
+          <Route path="users" element={<Users />} />
+          <Route path="users/:userId" element={<UserDetail />} />
+          <Route path="repos" element={<AdminRepos />} />
+          <Route path="logs" element={<Logs />} />
+        </Route>
       </Route>
 
       {/* Dedicated Not Found Route */}

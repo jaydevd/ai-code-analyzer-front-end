@@ -1,5 +1,5 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { getRepos } from "@/features/dashboard/api/getRepos";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export interface Repository {
   id: string;
@@ -10,6 +10,7 @@ export interface Repository {
   files?: number;
   branches?: number;
   chunks?: number;
+  default_branch: string
 }
 
 interface RepositoryState {
@@ -34,7 +35,24 @@ export const fetchRepos = createAsyncThunk("repos/fetchRepos", async () => {
 const repositorySlice = createSlice({
   name: "repos",
   initialState,
-  reducers: {},
+  reducers: {
+    updateRepoStatus(
+      state,
+      action: PayloadAction<{
+        id: string;
+        status: Repository["status"];
+        progress?: number;
+      }>
+    ) {
+      const repo = state.repos.find((r) => r.id === action.payload.id);
+      if (repo) {
+        repo.status = action.payload.status;
+        if (action.payload.progress !== undefined) {
+          repo.progress = action.payload.progress;
+        }
+      }
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchRepos.pending, (state) => {
@@ -53,5 +71,7 @@ const repositorySlice = createSlice({
       });
   },
 });
+
+export const { updateRepoStatus } = repositorySlice.actions;
 
 export default repositorySlice.reducer;

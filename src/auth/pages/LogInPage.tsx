@@ -1,10 +1,10 @@
+import { Loader2 } from "lucide-react";
 import { useState } from "react";
+import { FaArrowLeft, FaGithub } from "react-icons/fa";
+import { FcGoogle } from "react-icons/fc";
 import { useNavigate } from "react-router-dom";
 import useGithubSignIn from "../hooks/useGithubSignIn";
 import useGoogleSignIn from "../hooks/useGoogleSignIn";
-import { FaGithub, FaArrowLeft } from "react-icons/fa";
-import { FcGoogle } from "react-icons/fc";
-import { Loader2 } from "lucide-react";
 
 const LogInPage = () => {
   const navigate = useNavigate();
@@ -201,7 +201,7 @@ const LogInPage = () => {
             <p className="mt-8 text-center text-sm text-gray-400">
               Don&apos;t have an account?{" "}
               <a
-                href="#"
+                href="/signup"
                 className="
                   font-medium
                   text-sky-400
