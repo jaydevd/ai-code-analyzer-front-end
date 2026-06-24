@@ -1,15 +1,19 @@
-import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import {
-  AlertCircle,
-  CheckCircle2,
   ExternalLink,
   FolderGit2,
-  Loader2,
+  GitBranch,
+  Search,
 } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
-import { fetchRepos, Repository } from "@/app/slices/repositorySlice";
+import {
+  fetchRepos,
+  Repository,
+} from "@/app/slices/repositorySlice";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import SearchDialog from "../components/SearchDialog";
 
 interface RootState {
   repos: {
@@ -18,12 +22,26 @@ interface RootState {
     error: string | null;
     hasFetched: boolean;
   };
+  auth: {
+    user: {
+      github_username?: string;
+      is_github_installation_active?: boolean;
+    } | null;
+  };
 }
 
 const Repos = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const [searchOpen, setSearchOpen] = useState(false);
   const { repos, loading, error, hasFetched } = useSelector(
     (state: RootState) => state.repos
+  );
+  const githubUsername = useSelector(
+    (state: RootState) => state.auth.user?.github_username
+  );
+  const githubConnected = useSelector(
+    (state: RootState) => state.auth.user?.is_github_installation_active
   );
 
   useEffect(() => {
@@ -32,14 +50,35 @@ const Repos = () => {
     }
   }, [dispatch, hasFetched, repos.length]);
 
+  const handleOpenGitHub = useCallback(
+    (e: React.MouseEvent, repo: Repository) => {
+      e.stopPropagation();
+      const baseUrl = import.meta.env.VITE_GITHUB_BASE_URL || "https://github.com";
+      const url = `${baseUrl}/${githubUsername || ""}/${repo.name}`;
+      window.open(url, "_blank", "noopener,noreferrer");
+    },
+    [githubUsername]
+  );
+
   if (loading && repos.length === 0) return <LoadingSpinner fullPage />;
+
+  if (!githubConnected && hasFetched) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#020617]">
+        <div className="rounded-3xl border border-white/10 bg-white/[0.03] px-8 py-6 text-center backdrop-blur-xl">
+          <FolderGit2 className="mx-auto mb-3 h-8 w-8 text-zinc-600" />
+          <p className="text-zinc-500">No data found. Connect GitHub to view repositories.</p>
+        </div>
+      </div>
+    );
+  }
 
   if (error && repos.length === 0) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#020617]">
-        <div className="rounded-3xl border border-red-500/20 bg-red-500/[0.03] px-8 py-6 text-center backdrop-blur-xl">
-          <AlertCircle className="mx-auto mb-3 h-8 w-8 text-red-400" />
-          <p className="text-red-300">{error}</p>
+        <div className="rounded-3xl border border-white/10 bg-white/[0.03] px-8 py-6 text-center backdrop-blur-xl">
+          <FolderGit2 className="mx-auto mb-3 h-8 w-8 text-zinc-600" />
+          <p className="text-zinc-500">No data found</p>
         </div>
       </div>
     );
@@ -51,10 +90,13 @@ const Repos = () => {
 
         {/* Search */}
         <div className="w-full pb-8 mb-10 flex items-center justify-center border-b border-white/10">
-          <input
-            placeholder="Search repositories..."
-            className="w-xl h-11 rounded-lg border border-zinc-800 bg-white/[0.04] px-4 text-sm outline-none transition focus:border-zinc-700"
-          />
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="flex w-xl items-center gap-3 rounded-lg border border-zinc-800 bg-white/[0.04] px-4 py-2.5 text-sm transition hover:border-zinc-700"
+          >
+            <Search size={16} className="text-zinc-500 shrink-0" />
+            <span className="text-zinc-500">Search repositories...</span>
+          </button>
         </div>
 
         {/* Repository Grid */}
@@ -66,117 +108,48 @@ const Repos = () => {
           {repos.map((repo) => (
             <div
               key={repo.id}
-              className="flex h-full flex-col rounded-2xl border border-zinc-900 bg-white/[0.07] p-5 transition hover:border-zinc-800"
+              onClick={() => navigate(`/repositories/${encodeURIComponent(repo.name)}`)}
+              className="flex h-full flex-col rounded-2xl border border-zinc-900 bg-white/[0.07] p-5 transition hover:border-zinc-700 cursor-pointer"
             >
               {/* Top */}
               <div className="flex items-start justify-between">
-                <div>
+                <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <FolderGit2 size={18} />
-                    <h2 className="font-medium">
+                    <FolderGit2 size={18} className="shrink-0" />
+                    <h2 className="font-medium truncate">
                       {repo.name}
                     </h2>
                   </div>
-                  <p className="mt-1 text-xs text-zinc-500">
+                  <p className="mt-1 text-xs text-zinc-500 truncate">
                     {repo.url}
                   </p>
                 </div>
               </div>
 
-              {/* Status */}
-              <div className="mt-6">
-                <p className="text-xs uppercase tracking-wide text-zinc-500">
-                  Status
-                </p>
-                <div className="mt-2">
-                  {repo.status === "not_scanned" && (
-                    <span className="text-sm text-zinc-400">
-                      Not Scanned
-                    </span>
-                  )}
-
-                  {repo.status === "scanning" && (
-                    <div className="flex items-center gap-2 text-blue-400">
-                      <Loader2 size={16} className="animate-spin" />
-                      <span>Scanning</span>
-                    </div>
-                  )}
-
-                  {repo.status === "scanned" && (
-                    <div className="flex items-center gap-2 text-emerald-400">
-                      <CheckCircle2 size={16} />
-                      <span>Scanned</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Progress */}
-              {repo.status === "scanning" && (
-                <div className="mt-5">
-                  <div className="h-2 overflow-hidden rounded-full bg-zinc-800">
-                    <div
-                      className="h-full bg-blue-500 transition-all duration-300"
-                      style={{ width: `${repo.progress || 0}%` }}
-                    />
+              {/* Metadata */}
+              <div className="mt-auto pt-6 flex items-center gap-4">
+                {repo.branches !== undefined && (
+                  <div className="flex items-center gap-1.5 text-xs text-zinc-400">
+                    <GitBranch size={14} />
+                    <span>{repo.branches} branch{repo.branches !== 1 ? "es" : ""}</span>
                   </div>
-                  <p className="mt-2 text-xs text-zinc-500">
-                    {repo.progress || 0}% completed
-                  </p>
-                </div>
-              )}
-
-              {/* Metrics */}
-              {repo.status === "scanned" && (
-                <div className="mt-6 grid grid-cols-3 gap-4">
-                  <Metric label="Files" value={repo.files ?? 0} />
-                  <Metric label="Branches" value={repo.branches ?? 0} />
-                  <Metric label="Chunks" value={repo.chunks ?? 0} />
-                </div>
-              )}
-
-              {/* Action */}
-              <div className="mt-auto pt-6">
-                {repo.status === "scanning" && (
-                  <button
-                    disabled
-                    className="flex w-full items-center justify-center gap-2 rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-400"
-                  >
-                    <Loader2 size={16} className="animate-spin" />
-                    Scanning...
-                  </button>
                 )}
 
-                {repo.status === "scanned" && (
-                  <button className="w-full rounded-xl border-2 border-sky-900 px-4 py-2 text-sm font-medium transition hover:border-zinc-700">
-                    Open Repository
-                  </button>
-                )}
+                <button
+                  onClick={(e) => handleOpenGitHub(e, repo)}
+                  className="ml-auto flex items-center gap-1.5 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-400 transition hover:border-zinc-700 hover:text-white"
+                >
+                  <ExternalLink size={12} />
+                  GitHub
+                </button>
               </div>
             </div>
           ))}
         </div>
       </div>
-      <button className="absolute bottom-4 px-5 py-3 bg-gray-700 rounded-lg w-fit flex gap-2 items-center text-sm font-medium transition text-white cursor-pointer">
-        Manage Repos on Github <ExternalLink className="size-4"/>
-      </button>
+      <SearchDialog isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </div>
   );
-}
+};
 
 export default Repos;
-
-function Metric({
-  label,
-  value,
-}: {
-  label: string;
-  value: number;
-}) {
-  return (
-    <div>
-      <p className="text-xs text-zinc-500">{label}</p>
-      <p className="mt-1 text-sm font-medium">{value.toLocaleString()}</p>
-    </div>
-  );
-}

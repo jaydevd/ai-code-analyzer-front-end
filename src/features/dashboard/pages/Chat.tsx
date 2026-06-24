@@ -48,6 +48,7 @@ const Chat = () => {
 
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const prevChatIdRef = useRef<string | null>(null);
+  const historyFetchedRef = useRef(false);
 
   useEffect(() => {
     const prev = prevChatIdRef.current;
@@ -107,6 +108,7 @@ const Chat = () => {
     setCurrentChatId(null);
     setMessages([]);
     accumulatedContentRef.current = "";
+    historyFetchedRef.current = false;
   }, []);
 
   const handleSend = async (prompt: string) => {
@@ -210,7 +212,13 @@ const Chat = () => {
 
         <Button
           variant="icon"
-          onClick={() => setShowHistory(!showHistory)}
+          onClick={() => {
+            setShowHistory(!showHistory);
+            if (!historyFetchedRef.current) {
+              historyFetchedRef.current = true;
+              refetchChats();
+            }
+          }}
           className={`${showHistory ? "bg-white/5 text-white" : ""} h-9 w-9 p-0! rounded-full!`}
         >
           <History size={18} />
