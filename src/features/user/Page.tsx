@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { FaGithub } from "react-icons/fa";
 import {
@@ -25,6 +25,7 @@ import {
   deleteAccount,
 } from "@/auth/api/updateProfile";
 import { logout, updateUser } from "@/auth/slices/authSlice";
+import useGithubSignIn from "@/auth/hooks/useGithubSignIn";
 import { api } from "@/lib/axios";
 
 interface RootState {
@@ -35,7 +36,11 @@ interface RootState {
       first_name?: string;
       last_name?: string;
       github_username?: string;
+      github_oauth_username?: string;
+      github_installation_account_login?: string;
       is_github_installation_active?: boolean;
+      is_github_login_linked?: boolean;
+      is_github_repo_connected?: boolean;
       role?: string;
     } | null;
     isAuthenticated: boolean;
@@ -110,6 +115,8 @@ function DeleteConfirmModal({
 const ProfilePage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
+  const githubSignIn = useGithubSignIn();
   const { user } = useSelector((state: RootState) => state.auth);
 
   const [profileLoading, setProfileLoading] = useState(false);
@@ -118,6 +125,23 @@ const ProfilePage = () => {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [githubLoading, setGithubLoading] = useState(false);
+
+  useEffect(() => {
+    const action = (location.state as { oauthAction?: string; oauthError?: string } | null)?.oauthAction;
+    const error = (location.state as { oauthAction?: string; oauthError?: string } | null)?.oauthError;
+    if (action === "github_login_linked") {
+      toast.success("GitHub login linked successfully");
+      navigate(location.pathname, { replace: true, state: null });
+    }
+    if (action === "github_repo_connected") {
+      toast.success("GitHub repositories connected successfully");
+      navigate(location.pathname, { replace: true, state: null });
+    }
+    if (error) {
+      toast.error(error.replaceAll("_", " "));
+      navigate(location.pathname, { replace: true, state: null });
+    }
+  }, [location, navigate]);
 
   const {
     register: registerProfile,
@@ -221,6 +245,43 @@ const ProfilePage = () => {
     }
   };
 
+  const handleLinkGithubLogin = async () => {
+    setGithubLoading(true);
+    try {
+      await githubSignIn("link", "/user");
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Failed to link GitHub login");
+      setGithubLoading(false);
+    }
+  };
+
+  const handleDisconnectGithubRepos = async () => {
+    setGithubLoading(true);
+    try {
+      await api.post("api/github/disconnect/");
+      const profile = await api.get("/auth/user/");
+      dispatch(updateUser(profile.data?.data || profile.data));
+      toast.success("GitHub repositories disconnected");
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Failed to disconnect GitHub repositories");
+    } finally {
+      setGithubLoading(false);
+    }
+  };
+
+  const handleUnlinkGithubLogin = async () => {
+    setGithubLoading(true);
+    try {
+      const response = await api.post("/auth/github/unlink/");
+      dispatch(updateUser(response.data?.data || response.data));
+      toast.success("GitHub login unlinked");
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Failed to unlink GitHub login");
+    } finally {
+      setGithubLoading(false);
+    }
+  };
+
   const isAdmin = user?.role === "admin";
 
   return (
@@ -273,34 +334,73 @@ const ProfilePage = () => {
               <div>
                 <label className="mb-2 flex items-center gap-2 text-sm text-gray-400">
 <FaGithub className="h-4 w-4" />
-                    GitHub Username
+                    GitHub Login
                 </label>
                 <div className="w-full rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3 text-gray-300">
-                  {user?.github_username || (
+                  {user?.github_oauth_username || (
                     <span className="text-gray-500 italic">
-                      Not connected
+                      Not linked
                     </span>
                   )}
                 </div>
               </div>
 
-              {/* GitHub Status */}
               <div>
                 <label className="mb-2 flex items-center gap-2 text-sm text-gray-400">
-                  <Globe className="h-4 w-4" />
-                  GitHub Integration
+                  <FaGithub className="h-4 w-4" />
+                  GitHub Login Status
                 </label>
                 <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3">
-                  {user?.is_github_installation_active ? (
-                    <span className="flex items-center gap-2 text-emerald-400">
-                      <CheckCircle2 className="h-4 w-4" />
-                      Connected
-                    </span>
+                  {user?.is_github_login_linked ? (
+                    <>
+                      <span className="flex items-center gap-2 text-emerald-400">
+                        <CheckCircle2 className="h-4 w-4" />
+                        Linked
+                      </span>
+                      <Button variant="secondary" size="sm" onClick={handleUnlinkGithubLogin} loading={githubLoading}>
+                        Unlink GitHub Login
+                      </Button>
+                    </>
                   ) : (
                     <>
                       <span className="flex items-center gap-2 text-gray-500">
                         <XCircle className="h-4 w-4" />
-                        Not installed
+                        Not linked
+                      </span>
+                      <Button variant="secondary" size="sm" onClick={handleLinkGithubLogin} loading={githubLoading}>
+                        Link GitHub Login
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-2 flex items-center gap-2 text-sm text-gray-400">
+                  <Globe className="h-4 w-4" />
+                  GitHub Repositories
+                </label>
+                <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3">
+                  {user?.is_github_repo_connected ? (
+                    <>
+                      <span className="flex items-center gap-2 text-emerald-400">
+                        <CheckCircle2 className="h-4 w-4" />
+                        Connected as @{user?.github_installation_account_login || user?.github_username}
+                      </span>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={handleDisconnectGithubRepos}
+                        loading={githubLoading}
+                      >
+                        Disconnect Repositories
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <span className="flex items-center gap-2 text-gray-500">
+                        <XCircle className="h-4 w-4" />
+                        Not connected
                       </span>
                       <Button
                         variant="secondary"

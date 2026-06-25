@@ -81,7 +81,7 @@ const Sidebar = () => {
               {capitalizeFirstLetter(user.first_name) + " " + capitalizeFirstLetter(user.last_name)}
             </span>
             <span className="text-slate-400 text-xs tracking-widest">
-              {user.email.toLowerCase()}
+              {user.email?.toLowerCase()}
             </span>
           </button>
         ) : (

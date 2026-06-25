@@ -25,7 +25,9 @@ interface RootState {
   auth: {
     user: {
       github_username?: string;
+      github_installation_account_login?: string;
       is_github_installation_active?: boolean;
+      is_github_repo_connected?: boolean;
     } | null;
   };
 }
@@ -38,10 +40,14 @@ const Repos = () => {
     (state: RootState) => state.repos
   );
   const githubUsername = useSelector(
-    (state: RootState) => state.auth.user?.github_username
+    (state: RootState) =>
+      state.auth.user?.github_installation_account_login ||
+      state.auth.user?.github_username
   );
   const githubConnected = useSelector(
-    (state: RootState) => state.auth.user?.is_github_installation_active
+    (state: RootState) =>
+      state.auth.user?.is_github_repo_connected ??
+      state.auth.user?.is_github_installation_active
   );
 
   useEffect(() => {
@@ -54,7 +60,8 @@ const Repos = () => {
     (e: React.MouseEvent, repo: Repository) => {
       e.stopPropagation();
       const baseUrl = import.meta.env.VITE_GITHUB_BASE_URL || "https://github.com";
-      const url = `${baseUrl}/${githubUsername || ""}/${repo.name}`;
+      const repoPath = repo.url?.replace(`${baseUrl}/`, "") || `${githubUsername || ""}/${repo.name}`;
+      const url = `${baseUrl}/${repoPath}`;
       window.open(url, "_blank", "noopener,noreferrer");
     },
     [githubUsername]

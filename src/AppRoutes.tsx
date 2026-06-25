@@ -29,6 +29,9 @@ import Logs from "@/features/admin/pages/Logs";
 // Repository Detail
 import RepoDetail from "@/features/dashboard/pages/RepoDetail";
 
+// OAuth Callback
+import OAuthCallbackPage from "@/auth/pages/OAuthCallbackPage";
+
 // Not Found
 import NotFoundPage from "@/shared/pages/NotFoundPage";
 
@@ -101,6 +104,9 @@ const AppRoutes = () => {
         <Route path="/login/email" element={<EmailLogInPage />} />
         <Route path="/signup" element={<SignUpPage />} />
       </Route>
+
+      {/* OAuth Callback — outside PublicAuthRoute so it works for both unauthenticated and authenticated users */}
+      <Route path="/auth/callback" element={<OAuthCallbackPage />} />
 
       {/* Protected Routes */}
       <Route element={<ProtectedRoute />}>
