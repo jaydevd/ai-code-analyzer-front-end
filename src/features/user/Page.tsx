@@ -1,31 +1,31 @@
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { useDispatch, useSelector } from "react-redux";
-import { useLocation, useNavigate } from "react-router-dom";
-import toast from "react-hot-toast";
-import { FaGithub } from "react-icons/fa";
 import {
-  Mail,
-  Shield,
-  User,
+  ArrowLeft,
+  CheckCircle2,
+  Globe,
   Key,
   LogOut,
+  Mail,
+  Shield,
   Trash2,
-  ArrowLeft,
-  Globe,
-  CheckCircle2,
+  User,
   XCircle,
 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
+import { FaGithub } from "react-icons/fa";
+import { useDispatch, useSelector } from "react-redux";
+import { useLocation, useNavigate } from "react-router-dom";
 
-import Button from "@/components/ui/Button";
 import {
-  updateProfile,
-  logoutRequest,
   changePassword,
   deleteAccount,
+  logoutRequest,
+  updateProfile,
 } from "@/auth/api/updateProfile";
-import { logout, updateUser } from "@/auth/slices/authSlice";
 import useGithubSignIn from "@/auth/hooks/useGithubSignIn";
+import { logout, updateUser } from "@/auth/slices/authSlice";
+import Button from "@/components/ui/Button";
 import { api } from "@/lib/axios";
 
 interface RootState {
@@ -138,7 +138,7 @@ const ProfilePage = () => {
       navigate(location.pathname, { replace: true, state: null });
     }
     if (error) {
-      toast.error(error.replaceAll("_", " "));
+      toast.error(error.split("_").join(" "));
       navigate(location.pathname, { replace: true, state: null });
     }
   }, [location, navigate]);
