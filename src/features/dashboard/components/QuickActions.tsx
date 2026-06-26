@@ -17,8 +17,10 @@ const QuickActions = () => {
   const [githubLoading, setGithubLoading] = useState(false);
 
   const user = useSelector((state: any) => state.auth.user);
-  const githubConnected = user?.is_github_installation_active;
-  const githubUsername = user?.github_username;
+  const githubConnected = user?.is_github_repo_connected ?? user?.is_github_installation_active;
+  const githubUsername =
+    user?.github_installation_account_login ||
+    user?.github_username;
 
   const handleGithubClick = async () => {
     if (githubConnected) {

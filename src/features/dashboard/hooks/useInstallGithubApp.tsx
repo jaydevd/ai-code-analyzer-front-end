@@ -6,7 +6,7 @@ const useInstallGithubApp = () =>{
     try {
 
       const response = await installGithubApp();
-      const url = response.data.url;
+      const url = response.data?.url || response.data?.data?.url;
 
       window.location.replace(url);
 

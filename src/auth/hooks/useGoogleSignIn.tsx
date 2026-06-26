@@ -1,8 +1,6 @@
-
 const useGoogleSignIn = () => {
-  // This function will handle the Google Sign-In logic
-  // You can use Firebase Authentication, Google API, or any other method to implement this
-  console.log("Google Sign-In triggered");
+  const url = `${import.meta.env.VITE_API_URL}/auth/google/authorize/`;
+  window.location.href = url;
 }
 
 export default useGoogleSignIn;

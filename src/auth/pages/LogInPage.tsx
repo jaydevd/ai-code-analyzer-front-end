@@ -11,10 +11,12 @@ const LogInPage = () => {
   const [githubLoading, setGithubLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
+  const githubSignIn = useGithubSignIn();
+
   const SignInWithGitHub = async () => {
     setGithubLoading(true);
     try {
-      await useGithubSignIn();
+      await githubSignIn();
     } finally {
       setGithubLoading(false);
     }

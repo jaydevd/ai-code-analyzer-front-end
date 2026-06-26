@@ -1,9 +1,13 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { Loader2 } from "lucide-react";
+import { FaGithub } from "react-icons/fa";
 
 import useSignUp from "../hooks/useSignUp";
+import useGithubSignIn from "../hooks/useGithubSignIn";
 
 type SignUpFormData = {
   email: string;
@@ -15,6 +19,7 @@ type SignUpFormData = {
 const SignUpPage = () => {
   const navigate = useNavigate();
   const signUp = useSignUp();
+  const githubSignIn = useGithubSignIn();
 
   const {
     register,
@@ -29,12 +34,23 @@ const SignUpPage = () => {
     },
   });
 
+  const [githubLoading, setGithubLoading] = useState(false);
+
   const onSubmit = async (data: SignUpFormData) => {
     try {
       await signUp(data);
       toast.success("Account created successfully");
     } catch {
       toast.error("Failed to create account");
+    }
+  };
+
+  const handleGithubSignUp = async () => {
+    setGithubLoading(true);
+    try {
+      await githubSignIn("login");
+    } finally {
+      setGithubLoading(false);
     }
   };
 
@@ -179,13 +195,13 @@ const SignUpPage = () => {
                 )}
               </div>
 
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full rounded-xl bg-sky-600 py-3.5 font-medium text-white transition-all hover:bg-sky-500 hover:shadow-lg hover:shadow-sky-500/20 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isSubmitting ? "Creating Account..." : "Create Account"}
-              </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full rounded-xl bg-sky-600 py-3.5 font-medium text-white transition-all hover:bg-sky-500 hover:shadow-lg hover:shadow-sky-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isSubmitting ? "Creating Account..." : "Create Account"}
+            </button>
             </form>
 
             <div className="my-6 flex items-center">
@@ -193,6 +209,19 @@ const SignUpPage = () => {
               <span className="px-4 text-sm text-gray-500">OR</span>
               <div className="h-px flex-1 bg-white/10" />
             </div>
+
+            <button
+              onClick={handleGithubSignUp}
+              disabled={githubLoading}
+              className="mb-4 flex w-full items-center justify-center gap-3 rounded-xl border border-white/10 bg-white/5 py-3.5 text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {githubLoading ? (
+                <Loader2 size={20} className="animate-spin" />
+              ) : (
+                <FaGithub size={20} />
+              )}
+              Continue with GitHub
+            </button>
 
             <button
               onClick={() => navigate("/login")}
