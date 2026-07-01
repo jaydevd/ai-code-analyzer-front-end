@@ -67,11 +67,11 @@ const Repos = () => {
     [githubUsername]
   );
 
-  if (loading && repos.length === 0) return <LoadingSpinner fullPage />;
+  if (loading && repos.length === 0) return <LoadingSpinner className="fixed top-1/2 left-1/2" fullPage />;
 
   if (!githubConnected && hasFetched) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#020617]">
+      <div className="fixed top-1/2 left-1/2 flex min-h-screen items-center justify-center bg-[#020617]">
         <div className="rounded-3xl border border-white/10 bg-white/[0.03] px-8 py-6 text-center backdrop-blur-xl">
           <FolderGit2 className="mx-auto mb-3 h-8 w-8 text-zinc-600" />
           <p className="text-zinc-500">No data found. Connect GitHub to view repositories.</p>
@@ -82,17 +82,17 @@ const Repos = () => {
 
   if (error && repos.length === 0) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#020617]">
-        <div className="rounded-3xl border border-white/10 bg-white/[0.03] px-8 py-6 text-center backdrop-blur-xl">
-          <FolderGit2 className="mx-auto mb-3 h-8 w-8 text-zinc-600" />
-          <p className="text-zinc-500">No data found</p>
+      <div className="flex items-center justify-center h-full w-full">
+        <div className="flex flex-col gap-3 justify-center items-center rounded-4xl border border-white/10 bg-gray-800 px-8 py-6 text-center backdrop-blur-xl h-80 w-96">
+          <FolderGit2 className="mx-auto mb-3 h-8 w-8 text-sky-600" />
+          <p className="text-gray-400 text-lg">No data found</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="relative w-10/12 mx-auto min-h-screen text-zinc-100">
+    <div className="relative w-10/12 mx-auto min-h-screen text-zinc-100 overflow-scroll">
       <div className="w-full mx-auto py-8">
 
         {/* Search */}

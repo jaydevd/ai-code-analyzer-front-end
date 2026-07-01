@@ -38,7 +38,7 @@ const ChatInput = ({
   };
 
   return (
-    <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-1 py-1 transition focus-within:border-sky-500/50">
+    <div className="flex items-end gap-2 rounded-4xl border border-white/10 bg-white/[0.04] px-2 py-2 transition focus-within:border-sky-500/50">
       <textarea
         ref={textareaRef}
         value={input}
@@ -47,7 +47,7 @@ const ChatInput = ({
         placeholder={placeholder}
         disabled={disabled}
         rows={1}
-        className="flex-1 resize-none bg-transparent px-4 py-2 text-white outline-none placeholder:text-zinc-500 disabled:cursor-not-allowed disabled:opacity-60"
+        className="relative flex-1 bg-transparent resize-none overflow-y-auto max-h-72 px-4 py-2 text-white outline-none placeholder:text-zinc-500 disabled:cursor-not-allowed disabled:opacity-60"
       />
 
       <Button
